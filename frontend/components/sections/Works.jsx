@@ -77,35 +77,29 @@ function WorkCard({ work, i, inView, onClick }) {
       }}
     >
       {/* Thumbnail */}
-      <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#dce8f3', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#1a2332', overflow: 'hidden' }}>
 
-        {/* Show thumbnail image (works everywhere) */}
-        {work.thumbnail && (
-          <img src={work.thumbnail} alt={work.title}
+        {/* Video autoplay as thumbnail — muted loop */}
+        {work.videoFile && (
+          <video
+            src={work.videoFile}
+            autoPlay
+            muted
+            loop
+            playsInline
             style={{
               position: 'absolute', top: 0, left: 0,
               width: '100%', height: '100%',
-              objectFit: 'cover', display: 'block',
-              transition: 'transform 0.4s',
-              transform: hov ? 'scale(1.05)' : 'scale(1)',
-            }} />
-        )}
-
-        {/* If no thumbnail, show placeholder */}
-        {!work.thumbnail && (
-          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#1a2332,#2e4a6a)' }}>
-            <span style={{ fontSize: 44, opacity: 0.3 }}>🎬</span>
-          </div>
+              objectFit: 'cover',
+            }}
+          />
         )}
 
         {/* Dark gradient overlay */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(26,35,50,0.6) 0%, rgba(26,35,50,0.1) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(26,35,50,0.7) 0%, rgba(26,35,50,0.1) 100%)' }} />
 
         {/* Play button */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{
             width: 52, height: 52, borderRadius: '50%',
             border: '2px solid rgba(255,255,255,0.9)',
