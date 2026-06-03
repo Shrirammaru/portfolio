@@ -6,7 +6,7 @@ import { Play, X } from 'lucide-react'
 import { getWorks } from '@/lib/api'
 import { fallbackWorks } from '@/lib/data'
 
-const cats = ['All', 'Cinematography', 'Drone', 'Commercial', 'Short Film', 'Content Creator', 'Editing']
+const cats = ['All', 'Cinematography', 'Drone', 'Short Film', 'Content Creator', 'Editing']
 
 /* ── Simple video card thumbnail using native video element ── */
 function VideoCard({ src }) {
