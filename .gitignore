@@ -1,0 +1,5 @@
+frontend/public/*.MP4
+# Root level
+.DS_Store
+Thumbs.db
+*.log

@@ -1,0 +1,253 @@
+@import "tailwindcss";
+
+/* ════════════════════════════════════════════
+   SHRIRAM TOKSIYA PORTFOLIO
+   Theme: Sky Blue · White · Deep Navy
+   Light, airy, cinematic — like an open sky
+   ════════════════════════════════════════════ */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: #f0f4f8;
+  color: #1a2332;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #e8f0f8; }
+::-webkit-scrollbar-thumb { background: #2e86c1; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #1a5f8a; }
+::selection { background: rgba(46,134,193,0.2); color: #1a2332; }
+
+/* ── Accent gradient text ── */
+.accent-text {
+  background: linear-gradient(135deg, #1a5f8a 0%, #2e86c1 50%, #5dade2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.shimmer-text {
+  background: linear-gradient(90deg, #1a5f8a 0%, #5dade2 35%, #2e86c1 60%, #1a5f8a 100%);
+  background-size: 300% auto;
+  animation: shimmerAnim 4s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes shimmerAnim {
+  0%   { background-position: 0% center; }
+  100% { background-position: 300% center; }
+}
+
+/* ── Section label ── */
+.section-label {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: #2e86c1;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+
+/* ── Blue divider ── */
+.blue-divider {
+  width: 48px;
+  height: 2px;
+  background: linear-gradient(90deg, #2e86c1, transparent);
+  border-radius: 1px;
+  margin: 12px auto 0;
+}
+.blue-divider-left {
+  width: 48px;
+  height: 2px;
+  background: linear-gradient(90deg, #2e86c1, transparent);
+  border-radius: 1px;
+  margin: 12px 0 0;
+}
+
+/* ── Cards ── */
+.card-white {
+  background: #ffffff;
+  border: 1px solid #dce8f3;
+  border-radius: 2px;
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+}
+.card-white:hover {
+  border-color: #2e86c1;
+  box-shadow: 0 8px 32px rgba(46,134,193,0.12);
+  transform: translateY(-2px);
+}
+
+.card-blue {
+  background: linear-gradient(135deg, #1a5f8a 0%, #2e86c1 100%);
+  border-radius: 2px;
+  color: #ffffff;
+}
+
+/* ── Glass ── */
+.glass-light {
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(46,134,193,0.15);
+}
+.glass-blue {
+  background: rgba(46,134,193,0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(46,134,193,0.2);
+}
+.glass-dark {
+  background: rgba(26,35,50,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ── Navbar link ── */
+.nav-link { position: relative; transition: color 0.25s; }
+.nav-link::after {
+  content: ''; position: absolute; bottom: -3px; left: 0;
+  width: 0; height: 2px; background: #2e86c1; border-radius: 1px;
+  transition: width 0.3s ease;
+}
+.nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+/* ── Buttons ── */
+.btn-blue {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  background: linear-gradient(135deg, #1a5f8a, #2e86c1);
+  color: #ffffff;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  padding: 0.85rem 1.8rem; border: none; cursor: pointer;
+  border-radius: 1px;
+  transition: opacity 0.25s, transform 0.2s, box-shadow 0.25s;
+  white-space: nowrap;
+}
+.btn-blue:hover {
+  opacity: 0.9;
+  box-shadow: 0 6px 22px rgba(46,134,193,0.4);
+  transform: scale(1.03);
+}
+.btn-blue:active { transform: scale(0.97); }
+
+.btn-outline-blue {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  background: transparent; color: #2e86c1;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  padding: 0.85rem 1.8rem;
+  border: 2px solid #2e86c1; cursor: pointer; border-radius: 1px;
+  transition: background 0.25s, color 0.25s, transform 0.2s;
+  white-space: nowrap;
+}
+.btn-outline-blue:hover {
+  background: #2e86c1; color: #ffffff; transform: scale(1.03);
+}
+
+/* ── Input ── */
+.input-light {
+  width: 100%;
+  background: #ffffff;
+  border: 1.5px solid #dce8f3;
+  padding: 0.8rem 1rem;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.875rem; color: #1a2332;
+  outline: none; border-radius: 2px;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.input-light::placeholder { color: #8facc5; }
+.input-light:hover { border-color: #5dade2; }
+.input-light:focus {
+  border-color: #2e86c1;
+  box-shadow: 0 0 0 3px rgba(46,134,193,0.12);
+}
+
+/* ── Skill bar ── */
+.skill-track {
+  height: 4px; background: #e0ecf6; border-radius: 2px; overflow: hidden;
+}
+
+/* ── Section backgrounds ── */
+.section-white { background: #ffffff; }
+.section-light { background: #f0f4f8; }
+.section-navy  { background: #1a2332; }
+.section-blue  { background: linear-gradient(135deg, #1a5f8a 0%, #1a2332 100%); }
+
+/* ── Cinematic overlay (for hero video) ── */
+.video-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(26,35,50,0.65) 0%,
+    rgba(26,35,50,0.1) 40%,
+    rgba(26,35,50,0.1) 60%,
+    rgba(26,35,50,0.9) 100%
+  );
+}
+
+/* ── Tag ── */
+.tag-sm {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 0.58rem; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid #c5ddf0; color: #5dade2;
+  background: rgba(46,134,193,0.06); border-radius: 2px;
+}
+
+/* ── Animations ── */
+@keyframes pulseRing {
+  0%   { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+.pulse-ring { animation: pulseRing 2.2s ease-out infinite; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+.float-anim { animation: float 5s ease-in-out infinite; }
+
+/* ── Skill icon box ── */
+.skill-icon-box {
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, rgba(46,134,193,0.12), rgba(26,95,138,0.08));
+  border: 1px solid rgba(46,134,193,0.2);
+  border-radius: 2px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.skill-icon-box:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(46,134,193,0.2);
+}
+
+/* ── Line clamp ── */
+.line-clamp-2 {
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box; -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ── Hide scrollbar ── */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Font helpers ── */
+.font-playfair { font-family: 'Playfair Display', Georgia, serif !important; }
+.font-grotesk  { font-family: 'Space Grotesk', system-ui, sans-serif !important; }
