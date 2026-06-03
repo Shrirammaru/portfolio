@@ -2,22 +2,16 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { Play, X } from 'lucide-react'
+import { Play, X, ExternalLink } from 'lucide-react'
 import { getWorks } from '@/lib/api'
 import { fallbackWorks } from '@/lib/data'
 
 const cats = ['All', 'Cinematography', 'Drone', 'Short Film', 'Content Creator', 'Editing']
 
-/* Extract Google Drive file ID from preview URL */
-function getDriveThumb(previewUrl) {
-  if (!previewUrl) return null
-  const match = previewUrl.match(/\/d\/([a-zA-Z0-9_-]+)\//)
-  if (!match) return null
-  return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`
-}
-
-/* ── Modal ── */
+/* ── Modal with Drive iframe ── */
 function Modal({ work, onClose }) {
+  const [iframeLoaded, setIframeLoaded] = useState(false)
+
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     const esc = e => { if (e.key === 'Escape') onClose() }
@@ -25,39 +19,69 @@ function Modal({ work, onClose }) {
     return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', esc) }
   }, [onClose])
 
+  const driveViewUrl = work.driveId
+    ? `https://drive.google.com/file/d/${work.driveId}/view`
+    : work.videoUrl
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       onClick={onClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(13,20,32,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(13,20,32,0.96)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
         onClick={e => e.stopPropagation()}
         style={{ width: '100%', maxWidth: 900, position: 'relative' }}>
 
-        <button onClick={onClose} style={{ position: 'absolute', top: -38, right: 0, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
-          <X size={15} /> Close (Esc)
-        </button>
-
-        {/* Google Drive iframe player */}
-        <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(46,134,193,0.3)' }}>
-          {work.videoUrl ? (
-            <iframe
-              src={work.videoUrl}
-              title={work.title}
-              allow="autoplay"
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-              allowFullScreen
-            />
-          ) : work.videoFile ? (
-            <video src={work.videoFile} controls autoPlay playsInline
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain', background: '#000' }} />
-          ) : null}
+        {/* Top bar */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div>
+            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#5dade2', fontFamily: "'Space Grotesk',sans-serif" }}>{work.category}</span>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: '#fff', fontFamily: "'Playfair Display',serif", margin: '2px 0 0' }}>{work.title}</h3>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            {/* Open in Drive button */}
+            <a href={driveViewUrl} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(46,134,193,0.15)', border: '1px solid rgba(46,134,193,0.4)', color: '#5dade2', padding: '6px 12px', borderRadius: 4, fontSize: 11, fontWeight: 600, textDecoration: 'none', fontFamily: "'Space Grotesk',sans-serif", cursor: 'pointer' }}>
+              <ExternalLink size={12} /> Open in Drive
+            </a>
+            <button onClick={onClose}
+              style={{ background: 'none', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, padding: '6px 12px', borderRadius: 4 }}>
+              <X size={12} /> Close
+            </button>
+          </div>
         </div>
 
-        <div style={{ background: '#fff', padding: '14px 20px', borderRadius: '0 0 4px 4px' }}>
-          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#2e86c1', fontFamily: "'Space Grotesk',sans-serif" }}>{work.category}</span>
-          <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1a2332', fontFamily: "'Playfair Display',serif", margin: '4px 0' }}>{work.title}</h3>
-          <p style={{ fontSize: 12, color: '#6a8aaa', margin: 0 }}>{work.description}</p>
+        {/* iframe container */}
+        <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000', borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(46,134,193,0.25)' }}>
+
+          {/* Loading state */}
+          {!iframeLoaded && (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0d1520', gap: 16 }}>
+              <div style={{ width: 36, height: 36, border: '3px solid #2e86c1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, fontFamily: "'DM Sans',sans-serif" }}>Loading video...</p>
+              <style>{`@keyframes spin{to{transform:rotate(360deg);}}`}</style>
+            </div>
+          )}
+
+          <iframe
+            src={work.videoUrl}
+            title={work.title}
+            onLoad={() => setIframeLoaded(true)}
+            style={{
+              position: 'absolute', top: 0, left: 0,
+              width: '100%', height: '100%',
+              border: 'none',
+              opacity: iframeLoaded ? 1 : 0,
+              transition: 'opacity 0.3s',
+            }}
+            allow="autoplay; encrypted-media; fullscreen"
+            allowFullScreen
+          />
         </div>
+
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 8, textAlign: 'center', fontFamily: "'DM Sans',sans-serif" }}>
+          {work.description} &nbsp;·&nbsp; If video doesn't load,
+          <a href={driveViewUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#5dade2', textDecoration: 'none', marginLeft: 4 }}>click here to watch</a>
+        </p>
       </motion.div>
     </motion.div>
   )
@@ -68,7 +92,9 @@ function WorkCard({ work, i, inView, onClick }) {
   const [hov, setHov] = useState(false)
   const [imgErr, setImgErr] = useState(false)
 
-  const thumbSrc = getDriveThumb(work.videoUrl)
+  const thumbUrl = work.driveId
+    ? `https://drive.google.com/thumbnail?id=${work.driveId}&sz=w800`
+    : null
 
   return (
     <motion.div
@@ -89,38 +115,29 @@ function WorkCard({ work, i, inView, onClick }) {
       {/* Thumbnail */}
       <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#1a2332', overflow: 'hidden' }}>
 
-        {/* Google Drive thumbnail image */}
-        {thumbSrc && !imgErr && (
-          <img
-            src={thumbSrc}
-            alt={work.title}
-            onError={() => setImgErr(true)}
+        {/* Drive thumbnail */}
+        {thumbUrl && !imgErr && (
+          <img src={thumbUrl} alt={work.title} onError={() => setImgErr(true)}
             style={{
-              position: 'absolute', top: 0, left: 0,
-              width: '100%', height: '100%',
+              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
               objectFit: 'cover', display: 'block',
               transition: 'transform 0.4s',
               transform: hov ? 'scale(1.05)' : 'scale(1)',
-            }}
-          />
+            }} />
         )}
 
-        {/* Fallback — cinematic placeholder */}
-        {(!thumbSrc || imgErr) && (
-          <div style={{
-            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-            background: 'linear-gradient(135deg, #1a2332 0%, #2e4a6a 50%, #1a3a55 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <span style={{ fontSize: 48, opacity: 0.25 }}>🎬</span>
+        {/* Fallback */}
+        {(!thumbUrl || imgErr) && (
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#1a2332,#2e4a6a)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 48, opacity: 0.2 }}>🎬</span>
           </div>
         )}
 
-        {/* Dark overlay */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(26,35,50,0.65) 0%, rgba(26,35,50,0.05) 60%)' }} />
+        {/* Overlay */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(26,35,50,0.65) 0%, rgba(26,35,50,0.08) 60%)' }} />
 
         {/* Play button */}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{
             width: 52, height: 52, borderRadius: '50%',
             border: '2px solid rgba(255,255,255,0.9)',
@@ -136,13 +153,9 @@ function WorkCard({ work, i, inView, onClick }) {
 
         {/* Badges */}
         {work.featured && (
-          <div style={{ position: 'absolute', top: 10, left: 10, background: '#2e86c1', color: '#fff', fontSize: 8, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>
-            Featured
-          </div>
+          <div style={{ position: 'absolute', top: 10, left: 10, background: '#2e86c1', color: '#fff', fontSize: 8, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>Featured</div>
         )}
-        <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(255,255,255,0.92)', color: '#2e86c1', fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>
-          {work.category}
-        </div>
+        <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(255,255,255,0.9)', color: '#2e86c1', fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>{work.category}</div>
       </div>
 
       {/* Info */}
@@ -156,9 +169,7 @@ function WorkCard({ work, i, inView, onClick }) {
         {work.tags && (
           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             {work.tags.slice(0, 3).map(t => (
-              <span key={t} style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '2px 7px', borderRadius: 4, border: '1px solid #c5ddf0', color: '#5dade2', background: 'rgba(46,134,193,0.06)', fontFamily: "'Space Grotesk',sans-serif" }}>
-                {t}
-              </span>
+              <span key={t} style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '2px 7px', borderRadius: 4, border: '1px solid #c5ddf0', color: '#5dade2', background: 'rgba(46,134,193,0.06)', fontFamily: "'Space Grotesk',sans-serif" }}>{t}</span>
             ))}
           </div>
         )}
