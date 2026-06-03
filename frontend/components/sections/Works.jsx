@@ -8,13 +8,15 @@ import { fallbackWorks } from '@/lib/data'
 
 const cats = ['All', 'Cinematography', 'Drone', 'Short Film', 'Content Creator', 'Editing']
 
-/* ── Simple video card thumbnail using native video element ── */
-function VideoCard({ src }) {
+/* ── Simple video thumbnail ── */
+function VideoThumb({ src }) {
   const ref = useRef(null)
   useEffect(() => {
     const v = ref.current
     if (!v) return
-    v.addEventListener('loadedmetadata', () => { v.currentTime = 1.5 })
+    const handler = () => { v.currentTime = 1.5 }
+    v.addEventListener('loadedmetadata', handler)
+    return () => v.removeEventListener('loadedmetadata', handler)
   }, [src])
 
   return (
@@ -24,7 +26,11 @@ function VideoCard({ src }) {
       muted
       playsInline
       preload="metadata"
-      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', position: 'absolute', inset: 0 }}
+      style={{
+        position: 'absolute', top: 0, left: 0,
+        width: '100%', height: '100%',
+        objectFit: 'cover', display: 'block',
+      }}
     />
   )
 }
@@ -98,26 +104,28 @@ function WorkCard({ work, i, inView, onClick }) {
       }}
     >
       {/* Thumbnail */}
-      <div style={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden', background: 'linear-gradient(135deg,#dce8f3,#e8f4fe)' }}>
-        {work.videoFile
-          ? <VideoCard src={work.videoFile} />
-          : work.thumbnail
-            ? <img src={work.thumbnail} alt={work.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', position: 'absolute', inset: 0 }} />
-            : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 44, opacity: 0.2 }}>🎬</span>
-              </div>
-        }
+      <div style={{ position: 'relative', paddingBottom: '56.25%', overflow: 'hidden', background: 'linear-gradient(135deg,#dce8f3,#e8f4fe)' }}>
+        {work.videoFile ? (
+          <VideoThumb src={work.videoFile} />
+        ) : work.thumbnail ? (
+          <img src={work.thumbnail} alt={work.title}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        ) : (
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 44, opacity: 0.2 }}>🎬</span>
+          </div>
+        )}
         {/* Play overlay */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(26,35,50,0.5)', opacity: hov ? 1 : 0, transition: 'opacity 0.25s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(26,35,50,0.5)', opacity: hov ? 1 : 0, transition: 'opacity 0.25s', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
           <div style={{ width: 54, height: 54, borderRadius: '50%', border: '2px solid #fff', background: 'rgba(46,134,193,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: hov ? 'scale(1)' : 'scale(0.7)', transition: 'transform 0.22s' }}>
             <Play size={20} fill="#fff" color="#fff" style={{ marginLeft: 3 }} />
           </div>
         </div>
 
         {work.featured && (
-          <div style={{ position: 'absolute', top: 10, left: 10, background: '#2e86c1', color: '#fff', fontSize: 8, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>Featured</div>
+          <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 3, background: '#2e86c1', color: '#fff', fontSize: 8, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>Featured</div>
         )}
-        <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(255,255,255,0.9)', color: '#2e86c1', fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>{work.category}</div>
+        <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 3, background: 'rgba(255,255,255,0.9)', color: '#2e86c1', fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>{work.category}</div>
       </div>
 
       {/* Info */}
