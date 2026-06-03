@@ -8,7 +8,7 @@ import { fallbackWorks } from '@/lib/data'
 
 const cats = ['All', 'Cinematography', 'Drone', 'Short Film', 'Content Creator', 'Editing']
 
-/* ── Modal ── */
+/* ── Modal — plays local video or YouTube embed ── */
 function Modal({ work, onClose }) {
   useEffect(() => {
     document.body.style.overflow = 'hidden'
@@ -24,13 +24,28 @@ function Modal({ work, onClose }) {
       <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
         onClick={e => e.stopPropagation()}
         style={{ width: '100%', maxWidth: 900, position: 'relative' }}>
+
         <button onClick={onClose} style={{ position: 'absolute', top: -38, right: 0, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
           <X size={15} /> Close (Esc)
         </button>
+
         <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(46,134,193,0.3)' }}>
-          <video src={work.videoFile} controls autoPlay playsInline
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain', background: '#000' }} />
+          {/* YouTube embed */}
+          {work.videoUrl ? (
+            <iframe src={`${work.videoUrl}?autoplay=1`} title={work.title}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+          ) : work.videoFile ? (
+            /* Local video file */
+            <video src={work.videoFile} controls autoPlay playsInline
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain', background: '#000' }} />
+          ) : (
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6a8aaa', fontSize: 14 }}>
+              Video coming soon
+            </div>
+          )}
         </div>
+
         <div style={{ background: '#fff', padding: '14px 20px', borderRadius: '0 0 4px 4px' }}>
           <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#2e86c1', fontFamily: "'Space Grotesk',sans-serif" }}>{work.category}</span>
           <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1a2332', fontFamily: "'Playfair Display',serif", margin: '4px 0' }}>{work.title}</h3>
@@ -61,38 +76,44 @@ function WorkCard({ work, i, inView, onClick }) {
         transition: 'all 0.3s',
       }}
     >
-      {/* ── Thumbnail box ── */}
-      <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#dce8f3' }}>
+      {/* Thumbnail */}
+      <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#dce8f3', overflow: 'hidden' }}>
 
-        {/* Video as thumbnail */}
-        {work.videoFile && (
-          <video
-            src={`${work.videoFile}#t=1`}
-            muted
-            playsInline
-            preload="metadata"
+        {/* Show thumbnail image (works everywhere) */}
+        {work.thumbnail && (
+          <img src={work.thumbnail} alt={work.title}
             style={{
               position: 'absolute', top: 0, left: 0,
               width: '100%', height: '100%',
-              objectFit: 'cover',
-            }}
-          />
+              objectFit: 'cover', display: 'block',
+              transition: 'transform 0.4s',
+              transform: hov ? 'scale(1.05)' : 'scale(1)',
+            }} />
         )}
 
-        {/* Play button overlay — always visible */}
+        {/* If no thumbnail, show placeholder */}
+        {!work.thumbnail && (
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#1a2332,#2e4a6a)' }}>
+            <span style={{ fontSize: 44, opacity: 0.3 }}>🎬</span>
+          </div>
+        )}
+
+        {/* Dark gradient overlay */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(26,35,50,0.6) 0%, rgba(26,35,50,0.1) 100%)' }} />
+
+        {/* Play button */}
         <div style={{
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: hov ? 'rgba(26,35,50,0.55)' : 'rgba(26,35,50,0.25)',
-          transition: 'background 0.25s',
         }}>
           <div style={{
             width: 52, height: 52, borderRadius: '50%',
-            border: '2px solid #fff',
-            background: hov ? 'rgba(46,134,193,0.9)' : 'rgba(46,134,193,0.6)',
+            border: '2px solid rgba(255,255,255,0.9)',
+            background: hov ? 'rgba(46,134,193,0.9)' : 'rgba(46,134,193,0.65)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transform: hov ? 'scale(1.1)' : 'scale(1)',
-            transition: 'all 0.22s',
+            transform: hov ? 'scale(1.12)' : 'scale(1)',
+            transition: 'all 0.25s',
+            boxShadow: hov ? '0 4px 20px rgba(46,134,193,0.5)' : 'none',
           }}>
             <Play size={20} fill="#fff" color="#fff" style={{ marginLeft: 3 }} />
           </div>
@@ -100,13 +121,9 @@ function WorkCard({ work, i, inView, onClick }) {
 
         {/* Badges */}
         {work.featured && (
-          <div style={{ position: 'absolute', top: 10, left: 10, background: '#2e86c1', color: '#fff', fontSize: 8, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>
-            Featured
-          </div>
+          <div style={{ position: 'absolute', top: 10, left: 10, background: '#2e86c1', color: '#fff', fontSize: 8, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>Featured</div>
         )}
-        <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(255,255,255,0.92)', color: '#2e86c1', fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>
-          {work.category}
-        </div>
+        <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(255,255,255,0.9)', color: '#2e86c1', fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>{work.category}</div>
       </div>
 
       {/* Info */}
@@ -120,9 +137,7 @@ function WorkCard({ work, i, inView, onClick }) {
         {work.tags && (
           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             {work.tags.slice(0, 3).map(t => (
-              <span key={t} style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '2px 7px', borderRadius: 4, border: '1px solid #c5ddf0', color: '#5dade2', background: 'rgba(46,134,193,0.06)', fontFamily: "'Space Grotesk',sans-serif" }}>
-                {t}
-              </span>
+              <span key={t} style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '2px 7px', borderRadius: 4, border: '1px solid #c5ddf0', color: '#5dade2', background: 'rgba(46,134,193,0.06)', fontFamily: "'Space Grotesk',sans-serif" }}>{t}</span>
             ))}
           </div>
         )}
