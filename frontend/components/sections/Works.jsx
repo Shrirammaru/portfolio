@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { Play, X } from 'lucide-react'
@@ -7,33 +7,6 @@ import { getWorks } from '@/lib/api'
 import { fallbackWorks } from '@/lib/data'
 
 const cats = ['All', 'Cinematography', 'Drone', 'Short Film', 'Content Creator', 'Editing']
-
-/* ── Simple video thumbnail ── */
-function VideoThumb({ src }) {
-  const ref = useRef(null)
-  useEffect(() => {
-    const v = ref.current
-    if (!v) return
-    const handler = () => { v.currentTime = 1.5 }
-    v.addEventListener('loadedmetadata', handler)
-    return () => v.removeEventListener('loadedmetadata', handler)
-  }, [src])
-
-  return (
-    <video
-      ref={ref}
-      src={src}
-      muted
-      playsInline
-      preload="metadata"
-      style={{
-        position: 'absolute', top: 0, left: 0,
-        width: '100%', height: '100%',
-        objectFit: 'cover', display: 'block',
-      }}
-    />
-  )
-}
 
 /* ── Modal ── */
 function Modal({ work, onClose }) {
@@ -45,41 +18,23 @@ function Modal({ work, onClose }) {
   }, [onClose])
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       onClick={onClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(13,20,32,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} transition={{ duration: 0.22 }}
+      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(13,20,32,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
         onClick={e => e.stopPropagation()}
-        style={{ width: '100%', maxWidth: 900, position: 'relative' }}
-      >
+        style={{ width: '100%', maxWidth: 900, position: 'relative' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: -38, right: 0, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
           <X size={15} /> Close (Esc)
         </button>
-
-        <div style={{ aspectRatio: '16/9', background: '#000', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(46,134,193,0.3)' }}>
-          <video
-            src={work.videoFile}
-            controls
-            autoPlay
-            playsInline
-            style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000', display: 'block' }}
-          />
+        <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(46,134,193,0.3)' }}>
+          <video src={work.videoFile} controls autoPlay playsInline
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain', background: '#000' }} />
         </div>
-
-        <div style={{ background: '#fff', borderRadius: '0 0 4px 4px', padding: '14px 20px' }}>
+        <div style={{ background: '#fff', padding: '14px 20px', borderRadius: '0 0 4px 4px' }}>
           <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#2e86c1', fontFamily: "'Space Grotesk',sans-serif" }}>{work.category}</span>
           <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1a2332', fontFamily: "'Playfair Display',serif", margin: '4px 0' }}>{work.title}</h3>
           <p style={{ fontSize: 12, color: '#6a8aaa', margin: 0 }}>{work.description}</p>
-          {work.tags && (
-            <div style={{ display: 'flex', gap: 5, marginTop: 8, flexWrap: 'wrap' }}>
-              {work.tags.map(t => (
-                <span key={t} style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: 4, border: '1px solid #c5ddf0', color: '#5dade2', background: 'rgba(46,134,193,0.06)', fontFamily: "'Space Grotesk',sans-serif" }}>{t}</span>
-              ))}
-            </div>
-          )}
         </div>
       </motion.div>
     </motion.div>
@@ -92,8 +47,11 @@ function WorkCard({ work, i, inView, onClick }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5, delay: i * 0.07 }}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      initial={{ opacity: 0, y: 24 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay: i * 0.07 }}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
       onClick={onClick}
       style={{
         background: '#fff', borderRadius: 8, overflow: 'hidden', cursor: 'pointer',
@@ -103,39 +61,68 @@ function WorkCard({ work, i, inView, onClick }) {
         transition: 'all 0.3s',
       }}
     >
-      {/* Thumbnail */}
-      <div style={{ position: 'relative', paddingBottom: '56.25%', overflow: 'hidden', background: 'linear-gradient(135deg,#dce8f3,#e8f4fe)' }}>
-        {work.videoFile ? (
-          <VideoThumb src={work.videoFile} />
-        ) : work.thumbnail ? (
-          <img src={work.thumbnail} alt={work.title}
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-        ) : (
-          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: 44, opacity: 0.2 }}>🎬</span>
-          </div>
+      {/* ── Thumbnail box ── */}
+      <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#dce8f3' }}>
+
+        {/* Video as thumbnail */}
+        {work.videoFile && (
+          <video
+            src={`${work.videoFile}#t=1`}
+            muted
+            playsInline
+            preload="metadata"
+            style={{
+              position: 'absolute', top: 0, left: 0,
+              width: '100%', height: '100%',
+              objectFit: 'cover',
+            }}
+          />
         )}
-        {/* Play overlay */}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(26,35,50,0.5)', opacity: hov ? 1 : 0, transition: 'opacity 0.25s', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
-          <div style={{ width: 54, height: 54, borderRadius: '50%', border: '2px solid #fff', background: 'rgba(46,134,193,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: hov ? 'scale(1)' : 'scale(0.7)', transition: 'transform 0.22s' }}>
+
+        {/* Play button overlay — always visible */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: hov ? 'rgba(26,35,50,0.55)' : 'rgba(26,35,50,0.25)',
+          transition: 'background 0.25s',
+        }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: '50%',
+            border: '2px solid #fff',
+            background: hov ? 'rgba(46,134,193,0.9)' : 'rgba(46,134,193,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transform: hov ? 'scale(1.1)' : 'scale(1)',
+            transition: 'all 0.22s',
+          }}>
             <Play size={20} fill="#fff" color="#fff" style={{ marginLeft: 3 }} />
           </div>
         </div>
 
+        {/* Badges */}
         {work.featured && (
-          <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 3, background: '#2e86c1', color: '#fff', fontSize: 8, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>Featured</div>
+          <div style={{ position: 'absolute', top: 10, left: 10, background: '#2e86c1', color: '#fff', fontSize: 8, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>
+            Featured
+          </div>
         )}
-        <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 3, background: 'rgba(255,255,255,0.9)', color: '#2e86c1', fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>{work.category}</div>
+        <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(255,255,255,0.92)', color: '#2e86c1', fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>
+          {work.category}
+        </div>
       </div>
 
       {/* Info */}
       <div style={{ padding: '14px 16px' }}>
-        <h3 style={{ fontSize: 14, fontWeight: 700, color: hov ? '#2e86c1' : '#1a2332', fontFamily: "'Playfair Display',serif", marginBottom: 6, transition: 'color 0.25s', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{work.title}</h3>
-        <p style={{ fontSize: 12, color: '#7a9ab8', lineHeight: 1.6, marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{work.description}</p>
+        <h3 style={{ fontSize: 14, fontWeight: 700, color: hov ? '#2e86c1' : '#1a2332', fontFamily: "'Playfair Display',serif", marginBottom: 6, transition: 'color 0.25s', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+          {work.title}
+        </h3>
+        <p style={{ fontSize: 12, color: '#7a9ab8', lineHeight: 1.6, marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          {work.description}
+        </p>
         {work.tags && (
           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             {work.tags.slice(0, 3).map(t => (
-              <span key={t} style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '2px 7px', borderRadius: 4, border: '1px solid #c5ddf0', color: '#5dade2', background: 'rgba(46,134,193,0.06)', fontFamily: "'Space Grotesk',sans-serif" }}>{t}</span>
+              <span key={t} style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '2px 7px', borderRadius: 4, border: '1px solid #c5ddf0', color: '#5dade2', background: 'rgba(46,134,193,0.06)', fontFamily: "'Space Grotesk',sans-serif" }}>
+                {t}
+              </span>
             ))}
           </div>
         )}
@@ -153,7 +140,10 @@ export default function Works() {
 
   useEffect(() => {
     getWorks(cat)
-      .then(r => { if (r.data?.length) setWorks(r.data); else setWorks(fallbackWorks.filter(w => cat === 'All' || w.category === cat)) })
+      .then(r => {
+        if (r.data?.length) setWorks(r.data)
+        else setWorks(fallbackWorks.filter(w => cat === 'All' || w.category === cat))
+      })
       .catch(() => setWorks(fallbackWorks.filter(w => cat === 'All' || w.category === cat)))
   }, [cat])
 
@@ -185,15 +175,12 @@ export default function Works() {
             ))}
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }} className="works-grid">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }} className="works-grid">
             {works.map((w, i) => (
               <WorkCard key={w._id || i} work={w} i={i} inView={inView} onClick={() => setSelected(w)} />
             ))}
-          </motion.div>
+          </div>
         </div>
-
         <style>{`
           @media(max-width:900px){.works-grid{grid-template-columns:repeat(2,1fr) !important;}}
           @media(max-width:600px){.works-grid{grid-template-columns:1fr !important;}}
