@@ -12,8 +12,11 @@ const cats = ['All', 'Cinematography', 'Drone', 'Short Film', 'Content Creator',
 function VideoCard({ src }) {
   const ref = useRef(null)
   useEffect(() => {
-    if (ref.current) ref.current.currentTime = 1.5
+    const v = ref.current
+    if (!v) return
+    v.addEventListener('loadedmetadata', () => { v.currentTime = 1.5 })
   }, [src])
+
   return (
     <video
       ref={ref}
@@ -21,8 +24,7 @@ function VideoCard({ src }) {
       muted
       playsInline
       preload="metadata"
-      onLoadedMetadata={e => { e.target.currentTime = 1.5 }}
-      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', position: 'absolute', inset: 0 }}
     />
   )
 }
@@ -97,8 +99,14 @@ function WorkCard({ work, i, inView, onClick }) {
     >
       {/* Thumbnail */}
       <div style={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden', background: 'linear-gradient(135deg,#dce8f3,#e8f4fe)' }}>
-        {work.videoFile && <VideoCard src={work.videoFile} />}
-
+        {work.videoFile
+          ? <VideoCard src={work.videoFile} />
+          : work.thumbnail
+            ? <img src={work.thumbnail} alt={work.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', position: 'absolute', inset: 0 }} />
+            : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: 44, opacity: 0.2 }}>🎬</span>
+              </div>
+        }
         {/* Play overlay */}
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(26,35,50,0.5)', opacity: hov ? 1 : 0, transition: 'opacity 0.25s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ width: 54, height: 54, borderRadius: '50%', border: '2px solid #fff', background: 'rgba(46,134,193,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: hov ? 'scale(1)' : 'scale(0.7)', transition: 'transform 0.22s' }}>
