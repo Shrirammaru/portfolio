@@ -1,25 +1,31 @@
 import axios from 'axios'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
-
-export const api = axios.create({
-  baseURL: API_URL,
-  headers: { 'Content-Type': 'application/json' },
-  timeout: 10000,
-})
-
+// ── Contact — uses Next.js API route (works on Vercel without separate backend)
 export const submitContact = async (data) => {
-  const res = await api.post('/contact', data)
+  const res = await axios.post('/api/contact', data)
   return res.data
 }
 
+// ── Works & Testimonials — tries external backend, falls back to empty (uses local data)
+const BACKEND = process.env.NEXT_PUBLIC_API_URL || ''
+
 export const getWorks = async (category = 'All') => {
-  const params = category !== 'All' ? { category } : {}
-  const res = await api.get('/works', { params })
-  return res.data
+  if (!BACKEND) return { success: true, data: [] }
+  try {
+    const params = category !== 'All' ? { category } : {}
+    const res = await axios.get(`${BACKEND}/works`, { params, timeout: 5000 })
+    return res.data
+  } catch {
+    return { success: true, data: [] }
+  }
 }
 
 export const getTestimonials = async () => {
-  const res = await api.get('/testimonials')
-  return res.data
+  if (!BACKEND) return { success: true, data: [] }
+  try {
+    const res = await axios.get(`${BACKEND}/testimonials`, { timeout: 5000 })
+    return res.data
+  } catch {
+    return { success: true, data: [] }
+  }
 }
