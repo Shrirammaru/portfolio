@@ -2,132 +2,201 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { Play } from 'lucide-react'
-
-// YouTube SVG icon
-const YTIcon = ({ size = 12 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8z"/>
-    <polygon points="9.75,15.02 15.5,12 9.75,8.98 9.75,15.02" fill="white"/>
-  </svg>
-)
-import { getWorks } from '@/lib/api'
+import { ExternalLink } from 'lucide-react'
 import { fallbackWorks } from '@/lib/data'
 
 const cats = ['All', 'Cinematography', 'Drone', 'Commercial', 'Short Film', 'Content Creator', 'Editing']
 
+// YouTube play SVG
+const PlayIcon = () => (
+  <svg viewBox="0 0 68 48" width="56" height="40">
+    <path d="M66.5 7.7a8.5 8.5 0 0 0-6-6C56 0 34 0 34 0S12 0 7.5 1.7a8.5 8.5 0 0 0-6 6C0 12.1 0 24 0 24s0 11.9 1.5 16.3a8.5 8.5 0 0 0 6 6C12 48 34 48 34 48s22 0 26.5-1.7a8.5 8.5 0 0 0 6-6C68 35.9 68 24 68 24s0-11.9-1.5-16.3z" fill="#ff0000"/>
+    <path d="M27 34l18-10-18-10v20z" fill="#fff"/>
+  </svg>
+)
+
 function WorkCard({ work, i, inView }) {
   const [hov, setHov] = useState(false)
-  const [imgErr, setImgErr] = useState(false)
+  const [err, setErr]  = useState(false)
 
-  const thumb = imgErr
+  const thumb = err
     ? work.thumbnail?.replace('maxresdefault', 'hqdefault')
     : work.thumbnail
 
   return (
-    <motion.a
-      href={work.youtubeUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      initial={{ opacity: 0, y: 24 }}
+    <motion.div
+      initial={{ opacity: 0, y: 32 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: i * 0.07 }}
+      transition={{ duration: 0.55, delay: i * 0.08 }}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        display: 'block',
-        textDecoration: 'none',
-        background: '#fff',
-        borderRadius: 10,
+        borderRadius: 12,
         overflow: 'hidden',
-        border: `1.5px solid ${hov ? '#2e86c1' : '#dce8f3'}`,
-        boxShadow: hov ? '0 12px 36px rgba(46,134,193,0.15)' : '0 2px 10px rgba(26,35,50,0.07)',
-        transform: hov ? 'translateY(-4px)' : 'translateY(0)',
-        transition: 'all 0.3s',
+        background: '#fff',
+        boxShadow: hov
+          ? '0 20px 50px rgba(26,35,50,0.18), 0 0 0 2px #2e86c1'
+          : '0 4px 16px rgba(26,35,50,0.09)',
+        transform: hov ? 'translateY(-6px)' : 'translateY(0)',
+        transition: 'all 0.35s cubic-bezier(.4,0,.2,1)',
       }}
     >
-      {/* Thumbnail */}
-      <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', overflow: 'hidden', background: '#1a2332' }}>
-
+      {/* ── Thumbnail ── */}
+      <a
+        href={work.youtubeUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ display: 'block', position: 'relative', paddingTop: '56.25%', overflow: 'hidden', background: '#0d1a2a', textDecoration: 'none' }}
+      >
+        {/* Thumbnail image */}
         {thumb && (
-          <img src={thumb} alt={work.title}
-            onError={() => setImgErr(true)}
+          <img
+            src={thumb}
+            alt={work.title}
+            onError={() => setErr(true)}
             style={{
               position: 'absolute', top: 0, left: 0,
               width: '100%', height: '100%',
-              objectFit: 'cover', display: 'block',
-              transition: 'transform 0.5s',
-              transform: hov ? 'scale(1.06)' : 'scale(1)',
+              objectFit: 'cover',
+              transition: 'transform 0.5s, filter 0.5s',
+              transform: hov ? 'scale(1.07)' : 'scale(1)',
+              filter: hov ? 'brightness(0.65)' : 'brightness(0.85)',
             }}
           />
         )}
 
+        {/* No thumbnail fallback */}
         {!thumb && (
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#1a2332,#2e4a6a)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: 48, opacity: 0.2 }}>🎬</span>
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(135deg,#0d1a2a 0%,#1a3a5a 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <span style={{ fontSize: 52, opacity: 0.15 }}>🎬</span>
           </div>
         )}
 
-        {/* Dark overlay */}
-        <div style={{ position: 'absolute', inset: 0, background: hov ? 'rgba(26,35,50,0.5)' : 'rgba(26,35,50,0.22)', transition: 'background 0.3s' }} />
+        {/* Bottom gradient */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '55%',
+          background: 'linear-gradient(to top, rgba(13,26,42,0.9) 0%, transparent 100%)',
+        }} />
 
         {/* Play button */}
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          opacity: hov ? 1 : 0.85,
+          transition: 'opacity 0.3s',
+        }}>
           <div style={{
-            width: 54, height: 54, borderRadius: '50%',
-            border: `2px solid rgba(255,255,255,${hov ? 1 : 0.85})`,
-            background: hov ? '#2e86c1' : 'rgba(46,134,193,0.72)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
             transform: hov ? 'scale(1.15)' : 'scale(1)',
-            transition: 'all 0.28s',
-            boxShadow: hov ? '0 6px 24px rgba(46,134,193,0.55)' : '0 2px 12px rgba(0,0,0,0.3)',
+            transition: 'transform 0.3s',
+            filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))',
           }}>
-            <Play size={20} fill="#fff" color="#fff" style={{ marginLeft: 3 }} />
+            <PlayIcon />
           </div>
         </div>
 
-        {/* YouTube badge */}
-        {hov && (
-          <div style={{ position: 'absolute', bottom: 10, right: 10, display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,0,0,0.88)', color: '#fff', fontSize: 9, fontWeight: 700, padding: '4px 9px', borderRadius: 4, fontFamily: "'Space Grotesk',sans-serif" }}>
-            <YTIcon size={11} /> Watch on YouTube
-          </div>
-        )}
+        {/* Category pill */}
+        <div style={{
+          position: 'absolute', top: 12, left: 12,
+          background: '#2e86c1',
+          color: '#fff',
+          fontSize: 9, fontWeight: 800,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          padding: '4px 10px', borderRadius: 20,
+          fontFamily: "'Space Grotesk',sans-serif",
+        }}>
+          {work.category}
+        </div>
 
         {/* Featured badge */}
         {work.featured && (
-          <div style={{ position: 'absolute', top: 10, left: 10, background: '#2e86c1', color: '#fff', fontSize: 8, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '3px 9px', borderRadius: 20, fontFamily: "'Space Grotesk',sans-serif" }}>
-            Featured
+          <div style={{
+            position: 'absolute', top: 12, right: 12,
+            background: 'rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(8px)',
+            color: '#fff',
+            fontSize: 9, fontWeight: 700,
+            letterSpacing: '0.15em', textTransform: 'uppercase',
+            padding: '4px 10px', borderRadius: 20,
+            border: '1px solid rgba(255,255,255,0.3)',
+            fontFamily: "'Space Grotesk',sans-serif",
+          }}>
+            ⭐ Featured
           </div>
         )}
-        <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(255,255,255,0.92)', color: '#2e86c1', fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '3px 9px', borderRadius: 20, fontFamily: "'Space Grotesk',sans-serif" }}>
-          {work.category}
-        </div>
-      </div>
 
-      {/* Info */}
-      <div style={{ padding: '14px 16px' }}>
-        <h3 style={{ fontSize: 14, fontWeight: 700, color: hov ? '#2e86c1' : '#1a2332', fontFamily: "'Playfair Display',serif", marginBottom: 5, transition: 'color 0.25s', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-          {work.title}
-        </h3>
-        <p style={{ fontSize: 12, color: '#7a9ab8', lineHeight: 1.6, marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        {/* Title overlay at bottom */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '14px 16px' }}>
+          <h3 style={{
+            margin: 0,
+            fontSize: 15, fontWeight: 700,
+            color: '#ffffff',
+            fontFamily: "'Playfair Display',serif",
+            textShadow: '0 1px 4px rgba(0,0,0,0.5)',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            {work.title}
+          </h3>
+        </div>
+      </a>
+
+      {/* ── Card body ── */}
+      <div style={{ padding: '16px 18px 18px' }}>
+        <p style={{
+          fontSize: 12, color: '#6a8aaa', lineHeight: 1.7,
+          marginBottom: 14,
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+        }}>
           {work.description}
         </p>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {work.tags && (
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              {work.tags.slice(0, 3).map(t => (
-                <span key={t} style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '2px 7px', borderRadius: 20, border: '1px solid #c5ddf0', color: '#5dade2', background: 'rgba(46,134,193,0.06)', fontFamily: "'Space Grotesk',sans-serif" }}>
-                  {t}
-                </span>
-              ))}
-            </div>
-          )}
-          <span style={{ fontSize: 10, color: hov ? '#ff0000' : '#aac4d8', fontWeight: 600, fontFamily: "'Space Grotesk',sans-serif", display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0, marginLeft: 8, transition: 'color 0.25s' }}>
-            <YTIcon size={12} /> YouTube
-          </span>
+
+        {/* Tags */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 14 }}>
+          {work.tags?.map(t => (
+            <span key={t} style={{
+              fontSize: 9, fontWeight: 600,
+              letterSpacing: '0.12em', textTransform: 'uppercase',
+              padding: '3px 9px', borderRadius: 20,
+              border: '1px solid #c5ddf0',
+              color: '#3a7db5', background: 'rgba(46,134,193,0.07)',
+              fontFamily: "'Space Grotesk',sans-serif",
+            }}>
+              {t}
+            </span>
+          ))}
         </div>
+
+        {/* Watch button */}
+        <a
+          href={work.youtubeUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+            padding: '9px 0',
+            background: hov ? '#2e86c1' : '#f0f7ff',
+            color: hov ? '#fff' : '#2e86c1',
+            border: '1.5px solid #2e86c1',
+            borderRadius: 8,
+            fontSize: 11, fontWeight: 700,
+            letterSpacing: '0.14em', textTransform: 'uppercase',
+            fontFamily: "'Space Grotesk',sans-serif",
+            textDecoration: 'none',
+            transition: 'all 0.28s',
+          }}
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+            <path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.1 2.8 12 2.8 12 2.8s-4.1 0-6.8.2c-.6 0-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.1.7 11.3v2c0 2.1.3 4.2.3 4.2s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.3 21.7 12 21.7 12 21.7s4.1 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.1.3-4.2v-2C23.3 9.1 23 7 23 7z"/>
+            <polygon points="9.75,15.02 15.5,12 9.75,8.98" fill="white"/>
+          </svg>
+          Watch on YouTube
+          <ExternalLink size={11} />
+        </a>
       </div>
-    </motion.a>
+    </motion.div>
   )
 }
 
@@ -137,54 +206,72 @@ export default function Works() {
   const [cat, setCat]     = useState('All')
 
   useEffect(() => {
-    getWorks(cat)
-      .then(r => {
-        if (r.data?.length) setWorks(r.data)
-        else setWorks(fallbackWorks.filter(w => cat === 'All' || w.category === cat))
-      })
-      .catch(() => setWorks(fallbackWorks.filter(w => cat === 'All' || w.category === cat)))
+    setWorks(fallbackWorks.filter(w => cat === 'All' || w.category === cat))
   }, [cat])
 
   return (
-    <section id="works" ref={ref} style={{ padding: '96px 0', background: '#fff' }}>
+    <section id="works" ref={ref} style={{ padding: '96px 0', background: '#f0f4f8' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px' }}>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6 }}
-          style={{ textAlign: 'center', marginBottom: 48 }}>
-          <span style={{ display: 'block', marginBottom: 10, fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2e86c1', fontFamily: "'Space Grotesk',sans-serif" }}>Portfolio</span>
-          <h2 style={{ fontSize: 'clamp(2rem,5vw,3rem)', fontWeight: 700, color: '#1a2332', fontFamily: "'Playfair Display',serif", marginBottom: 12 }}>My Works</h2>
-          <p style={{ color: '#6a8aaa', fontSize: 14, maxWidth: 440, margin: '0 auto' }}>
-            Click any card to watch on YouTube — cinematic productions across multiple formats.
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          style={{ textAlign: 'center', marginBottom: 52 }}
+        >
+          <span style={{ display: 'block', marginBottom: 10, fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#2e86c1', fontFamily: "'Space Grotesk',sans-serif" }}>
+            Portfolio
+          </span>
+          <h2 style={{ fontSize: 'clamp(2rem,5vw,3rem)', fontWeight: 700, color: '#1a2332', fontFamily: "'Playfair Display',serif", marginBottom: 12 }}>
+            My Works
+          </h2>
+          <p style={{ color: '#6a8aaa', fontSize: 14, maxWidth: 480, margin: '0 auto' }}>
+            A selection of cinematic productions — click any card to watch on YouTube.
           </p>
-          <div style={{ width: 48, height: 2, background: 'linear-gradient(90deg,#2e86c1,transparent)', borderRadius: 1, margin: '12px auto 0' }} />
+          <div style={{ width: 48, height: 2, background: 'linear-gradient(90deg,#2e86c1,transparent)', borderRadius: 1, margin: '14px auto 0' }} />
         </motion.div>
 
-        {/* Filter */}
-        <motion.div initial={{ opacity: 0, y: 14 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.2 }}
-          style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginBottom: 40 }}>
+        {/* Filter tabs */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.2 }}
+          style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginBottom: 44 }}
+        >
           {cats.map(c => (
             <button key={c} onClick={() => setCat(c)} style={{
-              background: cat === c ? '#2e86c1' : '#f0f4f8',
+              background: cat === c ? '#2e86c1' : '#ffffff',
               color: cat === c ? '#fff' : '#5a7a9a',
               border: cat === c ? 'none' : '1.5px solid #dce8f3',
-              padding: '7px 18px', cursor: 'pointer', borderRadius: 20, transition: 'all 0.25s',
+              padding: '8px 20px', cursor: 'pointer', borderRadius: 24,
+              transition: 'all 0.25s',
               fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase',
               fontFamily: "'Space Grotesk',sans-serif",
-              boxShadow: cat === c ? '0 4px 14px rgba(46,134,193,0.3)' : 'none',
-            }}>{c}</button>
+              boxShadow: cat === c ? '0 4px 14px rgba(46,134,193,0.35)' : '0 2px 6px rgba(26,35,50,0.06)',
+            }}>
+              {c}
+            </button>
           ))}
         </motion.div>
 
+        {/* Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }} className="works-grid">
           {works.map((w, i) => (
             <WorkCard key={w._id || i} work={w} i={i} inView={inView} />
           ))}
         </div>
+
+        {works.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '60px 0', color: '#8aaac8', fontSize: 14 }}>
+            No works in this category yet.
+          </div>
+        )}
       </div>
 
       <style>{`
-        @media(max-width:900px){.works-grid{grid-template-columns:repeat(2,1fr) !important;}}
-        @media(max-width:600px){.works-grid{grid-template-columns:1fr !important;}}
+        @media(max-width:960px){.works-grid{grid-template-columns:repeat(2,1fr) !important;}}
+        @media(max-width:580px){.works-grid{grid-template-columns:1fr !important;}}
       `}</style>
     </section>
   )
